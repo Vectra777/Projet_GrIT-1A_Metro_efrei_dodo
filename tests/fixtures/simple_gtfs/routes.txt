@@ -1,0 +1,6 @@
+route_id,agency_id,route_short_name,route_long_name,route_type,route_color,route_text_color
+metro_1,IDFM:100,1,Metro 1,1,FFBE00,000000
+metro_7b,IDFM:100,7B,Metro 7B,1,6ECA97,000000
+rer_a,IDFM:71,A,RER A,2,E3051C,FFFFFF
+train_l,IDFM:70,L,Train L,2,777777,FFFFFF
+tram_3a,IDFM:100,T3a,Tramway T3a,0,FF7F00,000000
