@@ -1,0 +1,8 @@
+stop_id,stop_code,stop_name,stop_desc,stop_lon,stop_lat,zone_id,stop_url,location_type,parent_station,stop_timezone,level_id,wheelchair_boarding,platform_code
+station_a,,Station A,,2.3000,48.8500,1,,1,,Europe/Paris,,1,
+stop_a_1,,Station A quai 1,,2.3001,48.8501,1,,0,station_a,Europe/Paris,,1,1
+station_b,,Station B,,2.3100,48.8510,1,,1,,Europe/Paris,,1,
+stop_b_1,,Station B quai 1,,2.3101,48.8511,1,,0,station_b,Europe/Paris,,1,1
+station_c,,Station C,,2.3200,48.8520,1,,1,,Europe/Paris,,1,
+stop_c_1,,Station C quai 1,,2.3201,48.8521,1,,0,station_c,Europe/Paris,,1,1
+stop_c_2,,Station C quai 2,,2.3202,48.8522,1,,0,station_c,Europe/Paris,,1,2

@@ -1,0 +1,9 @@
+trip_id,arrival_time,departure_time,stop_id,stop_sequence,pickup_type,drop_off_type,local_zone_id,stop_headsign,timepoint
+trip_m1_1,08:00:00,08:01:00,stop_a_1,1,0,0,,,1
+trip_m1_1,08:05:00,08:06:00,stop_b_1,2,0,0,,,1
+trip_m7b_1,08:12:00,08:13:00,stop_c_1,1,0,0,,,1
+trip_m7b_1,08:18:00,08:19:00,stop_c_2,2,0,0,,,1
+trip_rera_1,08:20:00,08:21:00,stop_b_1,1,0,0,,,1
+trip_rera_1,08:28:00,08:29:00,stop_c_1,2,0,0,,,1
+trip_train_l_1,09:00:00,09:01:00,stop_a_1,1,0,0,,,1
+trip_train_l_1,09:05:00,09:06:00,stop_c_1,2,0,0,,,1

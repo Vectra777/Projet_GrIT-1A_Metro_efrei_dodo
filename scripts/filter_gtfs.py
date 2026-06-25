@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """Parse and filter the first useful slice of a GTFS dataset.
 
-This script intentionally handles only the first data-pipeline step:
+This script intentionally handles the first useful data-pipeline steps:
 
 - parse GTFS dates and times;
 - read UTF-8 CSV files;
 - keep only metro routes and RER routes operated by IDFM RER agency.
+- keep trips attached to the selected routes;
+- keep weekly calendars and calendar exceptions used by those trips.
 
-It gives the rest of the project a small, tested base before building trips,
-stops, schedules, transfers, and graph edges.
+It gives the rest of the project a small, tested base before building stops,
+schedules, transfers, and graph edges.
 """
 
 from __future__ import annotations
@@ -80,6 +82,47 @@ def normalize_route(row: dict[str, str]) -> dict[str, str]:
     }
 
 
+def normalize_trip(row: dict[str, str]) -> dict[str, str]:
+    """Keep the GTFS trip fields needed to later build scheduled edges."""
+    return {
+        "id": row["trip_id"],
+        "routeId": row["route_id"],
+        "serviceId": row["service_id"],
+        "headsign": row.get("trip_headsign", ""),
+        "directionId": row.get("direction_id", ""),
+        "shapeId": row.get("shape_id", ""),
+    }
+
+
+def normalize_calendar(row: dict[str, str]) -> dict[str, object]:
+    """Normalize weekly service availability for JSON output."""
+    return {
+        "id": row["service_id"],
+        "days": {
+            "monday": row["monday"] == "1",
+            "tuesday": row["tuesday"] == "1",
+            "wednesday": row["wednesday"] == "1",
+            "thursday": row["thursday"] == "1",
+            "friday": row["friday"] == "1",
+            "saturday": row["saturday"] == "1",
+            "sunday": row["sunday"] == "1",
+        },
+        "startDate": parse_date(row["start_date"]).isoformat(),
+        "endDate": parse_date(row["end_date"]).isoformat(),
+    }
+
+
+def normalize_calendar_date(row: dict[str, str]) -> dict[str, object]:
+    """Normalize a one-day GTFS service addition/removal."""
+    exception_type = int(row["exception_type"])
+    return {
+        "serviceId": row["service_id"],
+        "date": parse_date(row["date"]).isoformat(),
+        "exceptionType": exception_type,
+        "available": exception_type == 1,
+    }
+
+
 def route_sort_key(route: dict[str, str]) -> tuple[int, int, str]:
     """Sort metro lines first, then RER lines."""
     name = route["shortName"]
@@ -101,13 +144,69 @@ def load_selected_routes(gtfs_dir: Path) -> list[dict[str, str]]:
     return routes
 
 
+def load_selected_trips(
+    gtfs_dir: Path, selected_route_ids: set[str]
+) -> list[dict[str, str]]:
+    """Load trips that belong to the already selected metro/RER routes."""
+    trips = [
+        normalize_trip(row)
+        for row in read_csv(gtfs_dir / "trips.txt")
+        if row["route_id"] in selected_route_ids
+    ]
+    trips.sort(key=lambda trip: (trip["routeId"], trip["serviceId"], trip["id"]))
+    return trips
+
+
+def load_service_calendars(
+    gtfs_dir: Path, selected_service_ids: set[str]
+) -> list[dict[str, object]]:
+    """Load weekly calendars for services used by selected trips."""
+    calendars = [
+        normalize_calendar(row)
+        for row in read_csv(gtfs_dir / "calendar.txt")
+        if row["service_id"] in selected_service_ids
+    ]
+    calendars.sort(key=lambda calendar: str(calendar["id"]))
+    return calendars
+
+
+def load_calendar_dates(
+    gtfs_dir: Path, selected_service_ids: set[str]
+) -> list[dict[str, object]]:
+    """Load service exceptions for services used by selected trips."""
+    calendar_dates = [
+        normalize_calendar_date(row)
+        for row in read_csv(gtfs_dir / "calendar_dates.txt")
+        if row["service_id"] in selected_service_ids
+    ]
+    calendar_dates.sort(
+        key=lambda calendar_date: (
+            str(calendar_date["date"]),
+            str(calendar_date["serviceId"]),
+            int(calendar_date["exceptionType"]),
+        )
+    )
+    return calendar_dates
+
+
 def build_route_summary(gtfs_dir: Path) -> dict[str, object]:
     """Build the first compact data artifact for the project."""
     routes = load_selected_routes(gtfs_dir)
+    route_ids = {route["id"] for route in routes}
+    trips = load_selected_trips(gtfs_dir, route_ids)
+    service_ids = {trip["serviceId"] for trip in trips}
+    calendars = load_service_calendars(gtfs_dir, service_ids)
+    calendar_dates = load_calendar_dates(gtfs_dir, service_ids)
     return {
         "source": str(gtfs_dir),
         "routeCount": len(routes),
+        "tripCount": len(trips),
+        "serviceCount": len(service_ids),
+        "calendarExceptionCount": len(calendar_dates),
         "routes": routes,
+        "trips": trips,
+        "services": calendars,
+        "calendarDates": calendar_dates,
     }
 
 
