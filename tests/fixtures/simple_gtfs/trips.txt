@@ -1,0 +1,5 @@
+route_id,service_id,trip_id,trip_headsign,trip_short_name,direction_id,block_id,shape_id,wheelchair_accessible,bikes_allowed
+metro_1,weekday,trip_m1_1,La Defense,,0,,shape_m1,1,0
+metro_7b,weekend,trip_m7b_1,Pre Saint-Gervais,,1,,shape_m7b,1,0
+rer_a,weekday,trip_rera_1,Marne-la-Vallee Chessy,,0,,shape_rera,1,1
+train_l,weekday,trip_train_l_1,Saint-Lazare,,0,,shape_train_l,1,1

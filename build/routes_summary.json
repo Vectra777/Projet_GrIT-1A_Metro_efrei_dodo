@@ -1,0 +1,174 @@
+{
+  "source": "data/raw/gtfs-idfm-2024",
+  "routeCount": 21,
+  "routes": [
+    {
+      "id": "IDFM:C01371",
+      "shortName": "1",
+      "longName": "1",
+      "mode": "metro",
+      "color": "#FFBE00",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01372",
+      "shortName": "2",
+      "longName": "2",
+      "mode": "metro",
+      "color": "#0055C8",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "id": "IDFM:C01373",
+      "shortName": "3",
+      "longName": "3",
+      "mode": "metro",
+      "color": "#6E6E00",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "id": "IDFM:C01386",
+      "shortName": "3B",
+      "longName": "3B",
+      "mode": "metro",
+      "color": "#6EC4E8",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01374",
+      "shortName": "4",
+      "longName": "4",
+      "mode": "metro",
+      "color": "#A0006E",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "id": "IDFM:C01375",
+      "shortName": "5",
+      "longName": "5",
+      "mode": "metro",
+      "color": "#FF7E2E",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01376",
+      "shortName": "6",
+      "longName": "6",
+      "mode": "metro",
+      "color": "#6ECA97",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01377",
+      "shortName": "7",
+      "longName": "7",
+      "mode": "metro",
+      "color": "#F49FB3",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01387",
+      "shortName": "7B",
+      "longName": "7B",
+      "mode": "metro",
+      "color": "#6ECA97",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01378",
+      "shortName": "8",
+      "longName": "8",
+      "mode": "metro",
+      "color": "#D282BE",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01379",
+      "shortName": "9",
+      "longName": "9",
+      "mode": "metro",
+      "color": "#B6BD00",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01380",
+      "shortName": "10",
+      "longName": "10",
+      "mode": "metro",
+      "color": "#C9910D",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01381",
+      "shortName": "11",
+      "longName": "11",
+      "mode": "metro",
+      "color": "#704B1C",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "id": "IDFM:C01382",
+      "shortName": "12",
+      "longName": "12",
+      "mode": "metro",
+      "color": "#007852",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "id": "IDFM:C01383",
+      "shortName": "13",
+      "longName": "13",
+      "mode": "metro",
+      "color": "#6EC4E8",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01384",
+      "shortName": "14",
+      "longName": "14",
+      "mode": "metro",
+      "color": "#62259D",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "id": "IDFM:C01742",
+      "shortName": "A",
+      "longName": "A",
+      "mode": "rer",
+      "color": "#EB2132",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "id": "IDFM:C01743",
+      "shortName": "B",
+      "longName": "B",
+      "mode": "rer",
+      "color": "#5091CB",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "id": "IDFM:C01727",
+      "shortName": "C",
+      "longName": "C",
+      "mode": "rer",
+      "color": "#FFCC30",
+      "textColor": "#000000"
+    },
+    {
+      "id": "IDFM:C01728",
+      "shortName": "D",
+      "longName": "D",
+      "mode": "rer",
+      "color": "#008B5B",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "id": "IDFM:C01729",
+      "shortName": "E",
+      "longName": "E",
+      "mode": "rer",
+      "color": "#B94E9A",
+      "textColor": "#FFFFFF"
+    }
+  ]
+}

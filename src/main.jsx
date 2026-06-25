@@ -23,8 +23,8 @@ const routeSteps = [
 const buildItems = [
   ["Parser GTFS", "done"],
   ["Filtrer metro et RER", "done"],
-  ["Charger trips et calendriers", "active"],
-  ["Construire le graphe horaire", "next"],
+  ["Charger trips et calendriers", "done"],
+  ["Construire le graphe horaire", "active"],
   ["Dijkstra et correspondances", "next"],
   ["Carte interactive finale", "next"],
 ];

@@ -61,7 +61,10 @@ Il sait actuellement :
 - accepter les heures GTFS après minuit comme `25:10:00` ;
 - parser une date GTFS comme `20240227` ;
 - lire un fichier CSV GTFS en UTF-8 ;
-- filtrer et normaliser les lignes métro/RER depuis `routes.txt`.
+- filtrer et normaliser les lignes métro/RER depuis `routes.txt` ;
+- charger les trajets de `trips.txt` uniquement pour les lignes conservées ;
+- charger les services de `calendar.txt` utilisés par ces trajets ;
+- charger les exceptions de service depuis `calendar_dates.txt`.
 
 Exemple d'utilisation :
 
@@ -113,15 +116,16 @@ Les tests vérifient pour l'instant :
 - le parsing des dates GTFS ;
 - le rejet des heures invalides ;
 - le filtrage des lignes métro/RER ;
-- la normalisation des couleurs et du format JSON produit.
+- la normalisation des couleurs ;
+- le filtrage des trajets par ligne conservée ;
+- le filtrage des calendriers et exceptions par service utilisé ;
+- le format JSON produit.
 
 ## Prochaines étapes
 
 Les prochaines parties à implémenter seront :
 
-1. charger `trips.txt` uniquement pour les lignes conservées ;
-2. lire `calendar.txt` et `calendar_dates.txt` ;
-3. charger `stops.txt` et gérer les stations parentes ;
-4. transformer `stop_times.txt` en connexions entre arrêts consécutifs ;
-5. ajouter les correspondances depuis `transfers.txt` ;
-6. produire un premier graphe complet exploitable par l'application.
+1. charger `stops.txt` et gérer les stations parentes ;
+2. transformer `stop_times.txt` en connexions entre arrêts consécutifs ;
+3. ajouter les correspondances depuis `transfers.txt` ;
+4. produire un premier graphe complet exploitable par l'application.
