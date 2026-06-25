@@ -15,6 +15,12 @@ utiles, puis filtrer les lignes qui appartiennent au périmètre du projet.
 │       └── gtfs-idfm-2024/
 ├── scripts/
 │   └── filter_gtfs.py
+├── src/
+│   ├── main.jsx
+│   └── styles.css
+├── index.html
+├── package.json
+├── vite.config.js
 └── tests/
     ├── fixtures/
     │   └── simple_gtfs/
@@ -70,6 +76,22 @@ Sans `--output`, le JSON est affiché dans le terminal :
 ```bash
 python3 scripts/filter_gtfs.py --gtfs-dir data/raw/gtfs-idfm-2024
 ```
+
+## Preview front-end
+
+Un front-end Vite statique a ete ajoute pour montrer l'interface cible pendant
+que le graphe complet est encore en cours de construction.
+
+Installation et lancement :
+
+```bash
+npm install
+npm run dev
+```
+
+La preview ne depend pas encore des donnees generees. Elle simule le futur
+parcours utilisateur : recherche d'itineraire, panneau de resultats, outils de
+connexite/Kruskal et progression du projet.
 
 ## Tests
 
