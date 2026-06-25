@@ -95,7 +95,11 @@ GTFS est correct. Il sait actuellement :
 - accepter les heures GTFS après minuit comme `25:10:00` ;
 - parser une date GTFS comme `20240227` ;
 - lire un fichier CSV GTFS en UTF-8 ;
+<<<<<<< HEAD
 - filtrer et normaliser les lignes metro/RER depuis `routes.txt` ;
+=======
+- filtrer et normaliser les lignes métro/RER depuis `routes.txt` ;
+>>>>>>> 2d99fea7656d838f1d4ecfd24e4ba00f847f835f
 - charger les trajets de `trips.txt` uniquement pour les lignes conservées ;
 - charger les services de `calendar.txt` utilisés par ces trajets ;
 - charger les exceptions de service depuis `calendar_dates.txt`.
@@ -193,5 +197,18 @@ Les tests vérifient pour l'instant :
 - la normalisation des couleurs ;
 - le filtrage des trajets par ligne conservée ;
 - le filtrage des calendriers et exceptions par service utilisé ;
+<<<<<<< HEAD
 - la construction d'un graphe horaire compact avec stations, arcs et transferts ;
 - le format JSON produit.
+=======
+- le format JSON produit.
+
+## Prochaines étapes
+
+Les prochaines parties à implémenter seront :
+
+1. charger `stops.txt` et gérer les stations parentes ;
+2. transformer `stop_times.txt` en connexions entre arrêts consécutifs ;
+3. ajouter les correspondances depuis `transfers.txt` ;
+4. produire un premier graphe complet exploitable par l'application.
+>>>>>>> 2d99fea7656d838f1d4ecfd24e4ba00f847f835f

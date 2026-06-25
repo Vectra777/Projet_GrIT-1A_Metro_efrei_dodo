@@ -24,8 +24,13 @@ const buildItems = [
   ["Parser GTFS", "done"],
   ["Filtrer metro et RER", "done"],
   ["Charger trips et calendriers", "done"],
+<<<<<<< HEAD
   ["Construire le graphe horaire", "done"],
   ["Dijkstra et correspondances", "active"],
+=======
+  ["Construire le graphe horaire", "active"],
+  ["Dijkstra et correspondances", "next"],
+>>>>>>> 2d99fea7656d838f1d4ecfd24e4ba00f847f835f
   ["Carte interactive finale", "next"],
 ];
 
