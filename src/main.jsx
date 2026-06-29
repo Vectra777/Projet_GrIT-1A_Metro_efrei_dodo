@@ -25,8 +25,8 @@ const buildItems = [
   ["Filtrer metro et RER", "done"],
   ["Charger trips et calendriers", "done"],
   ["Construire le graphe horaire", "done"],
-  ["Dijkstra et correspondances", "active"],
-  ["Carte interactive finale", "next"],
+  ["Dijkstra et correspondances", "done"],
+  ["Carte interactive finale", "active"],
 ];
 
 function App() {
@@ -102,7 +102,7 @@ function App() {
         <section className="panel-section compact">
           <div className="section-title">
             <span>Avancement</span>
-            <strong>2 / 6</strong>
+            <strong>5 / 6</strong>
           </div>
           <ol className="progress-list">
             {buildItems.map(([label, state]) => (

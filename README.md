@@ -16,6 +16,12 @@ puis brancher une interface web de recherche d'itineraire.
 ├── scripts/
 │   ├── build_network.py
 │   ├── filter_gtfs.py
+│   ├── graph_algorithms/
+│   │   ├── astar.py
+│   │   ├── compare.py
+│   │   ├── connectivity.py
+│   │   ├── kruskal.py
+│   │   └── shortest_path.py
 │   └── gtfs_pipeline/
 │       ├── common.py
 │       ├── network.py
@@ -39,6 +45,7 @@ puis brancher une interface web de recherche d'itineraire.
     │       ├── transfers.txt
     │       └── trips.txt
     ├── test_build_network.py
+    ├── test_graph_algorithms.py
     └── test_filter_gtfs.py
 ```
 
@@ -50,15 +57,18 @@ Fait :
 - filtrer les lignes metro/RER du perimetre ;
 - charger les trips et calendriers utiles ;
 - construire un graphe horaire compact avec stations, arrets, arcs horaires et correspondances ;
+- calculer un itineraire avec Dijkstra horaire ;
+- comparer Dijkstra avec A* optionnel ;
+- tester la connexite du graphe ;
+- construire un arbre couvrant minimum avec Kruskal ;
 - ajouter une preview Vite/React de l'interface cible ;
 - couvrir le pipeline Python avec des tests unitaires.
 
 En cours / prochaines etapes :
 
-- brancher le front sur `build/network.json` ;
-- ajouter Dijkstra sur le graphe horaire ;
-- afficher les vrais trajets et correspondances ;
-- ajouter les outils de connexite et d'arbre couvrant sur les donnees generees.
+- brancher le front sur `build/network.json` et les algorithmes Python ;
+- afficher les vrais trajets et correspondances dans l'interface ;
+- afficher le resultat de connexite et l'arbre couvrant dans la preview.
 
 ## Données
 
@@ -170,6 +180,25 @@ python3 scripts/build_network.py \
   --output build/network.json
 ```
 
+## Algorithmes graphe
+
+Les algorithmes sont separes dans `scripts/graph_algorithms/` :
+
+- `shortest_path.py` : Dijkstra horaire sur les arrets, avec attente du prochain passage et correspondances ;
+- `astar.py` : A* optionnel avec heuristique geographique ;
+- `compare.py` : comparaison Dijkstra/A* sur une meme requete ;
+- `connectivity.py` : parcours BFS pour verifier si toutes les stations sont atteignables ;
+- `kruskal.py` : arbre couvrant minimum sur les arcs de stations.
+
+Le Dijkstra travaille sur les `edges` horaires et les `transfers` du
+`network.json`. Les tests verifient qu'il choisit l'arrivee la plus tot, meme
+si une correspondance a pied est plus rapide que l'attente d'un train.
+
+A* utilise la distance a vol d'oiseau entre arrets comme borne optimiste du
+temps restant. Il est garde comme option de comparaison : Dijkstra reste la
+reference de correction, A* sert a mesurer si l'heuristique reduit le nombre
+d'arrets explores sans changer le resultat.
+
 ## Tests
 
 Les tests utilisent un petit fixture GTFS minimal dans :
@@ -194,4 +223,5 @@ Les tests vérifient pour l'instant :
 - le filtrage des trajets par ligne conservée ;
 - le filtrage des calendriers et exceptions par service utilisé ;
 - la construction d'un graphe horaire compact avec stations, arcs et transferts ;
+- Dijkstra horaire, A* optionnel, comparaison des deux, connexite BFS et Kruskal ;
 - le format JSON produit.
