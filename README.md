@@ -1,8 +1,8 @@
-# Projet GrIT 1A - Metro Efrei Dodo
+# Projet GrIT 1A - Dijkstreet
 
-L'objectif du projet est de construire une base propre pour exploiter les
-donnees GTFS Ile-de-France Mobilites, produire un graphe metro/RER compact,
-puis brancher une interface web de recherche d'itineraire.
+Le projet exploite les donnees GTFS Ile-de-France Mobilites pour construire un
+graphe metro/RER, tester des algorithmes de graphe et afficher une interface web
+interactive de recherche d'itineraire.
 
 ## Structure actuelle
 
@@ -28,25 +28,20 @@ puis brancher une interface web de recherche d'itineraire.
 │       ├── routes.py
 │       ├── services.py
 │       └── stops.py
-├── src/
-│   ├── main.jsx
+├── public/
+│   ├── data/
+│   │   └── network.json
+│   ├── logo.png
+│   ├── main.js
 │   └── styles.css
 ├── index.html
 ├── package.json
 ├── vite.config.js
 └── tests/
-    ├── fixtures/
-    │   └── simple_gtfs/
-    │       ├── calendar.txt
-    │       ├── calendar_dates.txt
-    │       ├── routes.txt
-    │       ├── stop_times.txt
-    │       ├── stops.txt
-    │       ├── transfers.txt
-    │       └── trips.txt
+    ├── fixtures/simple_gtfs/
     ├── test_build_network.py
-    ├── test_graph_algorithms.py
-    └── test_filter_gtfs.py
+    ├── test_filter_gtfs.py
+    └── test_graph_algorithms.py
 ```
 
 ## Avancement
@@ -59,36 +54,70 @@ Fait :
 - construire un graphe horaire compact avec stations, arrets, arcs horaires et correspondances ;
 - calculer un itineraire avec Dijkstra horaire ;
 - comparer Dijkstra avec A* optionnel ;
+- exposer la comparaison Dijkstra / A* dans le front ;
+- estimer l'empreinte carbone des trajets dans le front ;
 - tester la connexite du graphe ;
 - construire un arbre couvrant minimum avec Kruskal ;
-- ajouter une preview Vite/React de l'interface cible ;
+- remplacer le front par l'interface complete adaptee pour Dijkstreet ;
 - couvrir le pipeline Python avec des tests unitaires.
 
-En cours / prochaines etapes :
+Reste possible en amelioration :
 
-- brancher le front sur `build/network.json` et les algorithmes Python ;
-- afficher les vrais trajets et correspondances dans l'interface ;
-- afficher le resultat de connexite et l'arbre couvrant dans la preview.
+- optimiser la taille de `public/data/network.json` ;
+- brancher les algorithmes Python sur une API si le calcul navigateur devient trop lourd ;
+- ajouter des donnees temps reel si le perimetre final le demande.
 
-## Données
+## Donnees
 
-Le dossier `data/` vient du projet de référence.
+Le dossier `data/` vient du projet de reference.
 
-Les données principales sont dans :
+Les donnees principales sont dans :
 
 ```text
 data/raw/gtfs-idfm-2024/
 ```
 
 Elles suivent le format GTFS d'Ile-de-France Mobilites. Le pipeline utilise
-maintenant `routes.txt`, `trips.txt`, `calendar.txt`, `calendar_dates.txt`,
-`stops.txt`, `stop_times.txt` et `transfers.txt`.
+`routes.txt`, `trips.txt`, `calendar.txt`, `calendar_dates.txt`, `stops.txt`,
+`stop_times.txt` et `transfers.txt`.
 
-Les règles de filtrage sont :
+Les regles de filtrage sont :
 
-- métro : `route_type = 1` ;
+- metro : `route_type = 1` ;
 - RER : `route_type = 2` avec `agency_id = IDFM:71` ;
-- les autres modes sont ignorés.
+- les autres modes sont ignores.
+
+## Front-end
+
+Le front est une application statique Vite en HTML, CSS et JavaScript vanilla.
+Il reprend le front du projet complet et l'adapte au nom Dijkstreet.
+
+Fichiers principaux :
+
+- `index.html` : structure de l'application ;
+- `public/styles.css` : styles de l'interface ;
+- `public/main.js` : logique de carte, interactions et calculs cote navigateur ;
+- `public/data/network.json` : graphe charge par le front.
+
+Installation et lancement :
+
+```bash
+npm install
+npm run dev
+```
+
+Fonctionnalites disponibles :
+
+- carte interactive avec fond cartographique ;
+- zoom, deplacement et recentrage ;
+- survol des stations avec tooltip ;
+- selection depart/arrivee par clic sur la carte ;
+- recherche d'itineraire ;
+- comparaison Dijkstra / A* ;
+- estimation de l'empreinte carbone du trajet ;
+- affichage des routes avec les couleurs des lignes ;
+- test de connexite du reseau ;
+- affichage et animation de l'arbre couvrant minimum.
 
 ## Filtrage GTFS
 
@@ -98,17 +127,8 @@ Le script de filtrage est :
 scripts/filter_gtfs.py
 ```
 
-Il sert a produire un JSON intermediaire lisible pour verifier que le perimetre
-GTFS est correct. Il sait actuellement :
-
-- parser une heure GTFS comme `08:15:30` en secondes ;
-- accepter les heures GTFS après minuit comme `25:10:00` ;
-- parser une date GTFS comme `20240227` ;
-- lire un fichier CSV GTFS en UTF-8 ;
-- filtrer et normaliser les lignes metro/RER depuis `routes.txt` ;
-- charger les trajets de `trips.txt` uniquement pour les lignes conservées ;
-- charger les services de `calendar.txt` utilisés par ces trajets ;
-- charger les exceptions de service depuis `calendar_dates.txt`.
+Il produit un JSON intermediaire lisible pour verifier que le perimetre GTFS est
+correct.
 
 Exemple d'utilisation :
 
@@ -118,27 +138,11 @@ python3 scripts/filter_gtfs.py \
   --output build/routes_summary.json
 ```
 
-Sans `--output`, le JSON est affiché dans le terminal :
+Sans `--output`, le JSON est affiche dans le terminal :
 
 ```bash
 python3 scripts/filter_gtfs.py --gtfs-dir data/raw/gtfs-idfm-2024
 ```
-
-## Preview front-end
-
-Un front-end Vite statique montre l'interface cible pendant que les algorithmes
-de recherche sont branches progressivement.
-
-Installation et lancement :
-
-```bash
-npm install
-npm run dev
-```
-
-La preview ne depend pas encore des donnees generees. Elle montre le parcours
-utilisateur cible : recherche d'itineraire, panneau de resultats, outils de
-connexite/Kruskal et progression du projet.
 
 ## Graphe horaire
 
@@ -148,8 +152,7 @@ Le script de construction du graphe est :
 scripts/build_network.py
 ```
 
-Ce fichier est volontairement court : il gere seulement la ligne de commande et
-l'ecriture JSON. La logique est separee dans `scripts/gtfs_pipeline/` :
+La logique est separee dans `scripts/gtfs_pipeline/` :
 
 - `common.py` : constantes, lecture CSV, parsing date/heure ;
 - `routes.py` : routes et trips ;
@@ -157,47 +160,32 @@ l'ecriture JSON. La logique est separee dans `scripts/gtfs_pipeline/` :
 - `stops.py` : arrets, stations parentes et index ;
 - `network.py` : assemblage du graphe, arcs horaires et transferts.
 
-Il construit `build/network.json` depuis les fichiers GTFS utiles :
-
-- `routes.txt` pour garder les lignes metro/RER ;
-- `trips.txt` pour connaitre les trajets ;
-- `calendar.txt` et `calendar_dates.txt` pour calculer les services actifs ;
-- `stops.txt` pour regrouper les quais dans leurs stations commerciales ;
-- `stop_times.txt` pour creer les arcs horaires entre arrets consecutifs ;
-- `transfers.txt` pour ajouter les correspondances.
-
 Commande :
 
 ```bash
 python3 scripts/build_network.py
 ```
 
-Il est aussi possible de choisir les chemins :
+Pour alimenter le front :
 
 ```bash
 python3 scripts/build_network.py \
   --gtfs-dir data/raw/gtfs-idfm-2024 \
-  --output build/network.json
+  --output public/data/network.json
 ```
 
 ## Algorithmes graphe
 
-Les algorithmes sont separes dans `scripts/graph_algorithms/` :
+Les algorithmes Python sont separes dans `scripts/graph_algorithms/` :
 
-- `shortest_path.py` : Dijkstra horaire sur les arrets, avec attente du prochain passage et correspondances ;
+- `shortest_path.py` : Dijkstra horaire sur les arrets ;
 - `astar.py` : A* optionnel avec heuristique geographique ;
 - `compare.py` : comparaison Dijkstra/A* sur une meme requete ;
 - `connectivity.py` : parcours BFS pour verifier si toutes les stations sont atteignables ;
 - `kruskal.py` : arbre couvrant minimum sur les arcs de stations.
 
-Le Dijkstra travaille sur les `edges` horaires et les `transfers` du
-`network.json`. Les tests verifient qu'il choisit l'arrivee la plus tot, meme
-si une correspondance a pied est plus rapide que l'attente d'un train.
-
-A* utilise la distance a vol d'oiseau entre arrets comme borne optimiste du
-temps restant. Il est garde comme option de comparaison : Dijkstra reste la
-reference de correction, A* sert a mesurer si l'heuristique reduit le nombre
-d'arrets explores sans changer le resultat.
+Dijkstra reste l'algorithme de reference pour garantir le plus court temps. A*
+sert a comparer le nombre d'etats explores avec une heuristique geographique.
 
 ## Tests
 
@@ -213,15 +201,8 @@ Lancer les tests :
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Les tests vérifient pour l'instant :
+Verifier le build front :
 
-- le parsing des heures GTFS ;
-- le parsing des dates GTFS ;
-- le rejet des heures invalides ;
-- le filtrage des lignes métro/RER ;
-- la normalisation des couleurs ;
-- le filtrage des trajets par ligne conservée ;
-- le filtrage des calendriers et exceptions par service utilisé ;
-- la construction d'un graphe horaire compact avec stations, arcs et transferts ;
-- Dijkstra horaire, A* optionnel, comparaison des deux, connexite BFS et Kruskal ;
-- le format JSON produit.
+```bash
+npm run build
+```
