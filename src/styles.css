@@ -522,3 +522,146 @@ h2 {
     min-height: 440px;
   }
 }
+
+@media (prefers-color-scheme: dark){
+  :root {
+    color-scheme: dark;
+    --bg: #0f1420;
+    --ink: #e7ecf7;
+    --muted: #92a0b8;
+    --panel: #161c2c;
+    --line: #2b3450;
+    --blue: #5b93ff;
+    --cyan: #2dd7d0;
+    --pink: #ff8fc2;
+    --yellow: #ffd54a;
+    --green: #34d399;
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+  }
+
+  .sidebar{
+    background: rgba(22, 28, 44, 0.92);
+    border-right-color: var(--line);
+  }
+
+  .panel-section, .result-panel {
+    background: var(--panel);
+    border-color: var(--line);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  .section-title strong, .topbar-actions span {
+    background: rgba(91, 147, 255, 0.16);
+    color: #a9c3ff;
+  }
+
+  label {
+    color: #c4cede;
+  }
+
+  select, input {
+    background: #10162400;
+    background-color: #121a2b;
+    border-color: #2f3a55;
+    color: var(--ink);
+  }
+
+  select:focus, input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(91, 147, 255, 0.22);
+  }
+
+  button {
+    background: #121a2b;
+    border-color: #2f3a55;
+    color: var(--ink);
+  }
+
+  button:hover, button[aria-pressed="true"] {
+    border-color: var(--blue);
+    background: rgba(91, 147, 255, 0.16);
+    color: #cddcff;
+  }
+
+  .primary-button {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #0b1220;
+  }
+
+  .primary-button:hover {
+    background: #7fa9ff;
+    color: #0b1220;
+  }
+
+  .status-card {
+    background: #121a2b;
+    color: #b4bfd4;
+  }
+
+  .progress-list li {
+    color: #8892a6;
+  }
+
+  .progress-list li[data-state="done"] {
+    color: #5eead4;
+  }
+
+  .progress-list li[data-state="active"] {
+    color: #ffcb6b;
+  }
+
+  .progress-list li[data-state="active"] span {
+    border-color: #ffb648;
+    background: rgba(255, 182, 72, 0.18);
+  }
+
+  .map-board {
+    background: #0c1622;
+    box-shadow: var(--shadow);
+  }
+
+  .river {
+    stroke: #14283a;
+  }
+
+  .station circle {
+    fill: #161c2c;
+    stroke: #e7ecf7;
+  }
+
+  .station text {
+    fill: #dbe4f5;
+    stroke: #0c1622;
+  }
+
+  .floating-card rect {
+    fill: #161c2c;
+  }
+
+  .floating-card text {
+    fill: var(--ink);
+  }
+
+  .hint {
+    background: rgba(45, 215, 208, 0.08);
+    border-left-color: var(--cyan);
+  }
+
+  .step {
+    border-top-color: var(--line);
+  }
+
+  .metric-grid div {
+    background: #121a2b;
+  }
+
+  .line-badge {
+    color: #0b1220;
+  }
+}
