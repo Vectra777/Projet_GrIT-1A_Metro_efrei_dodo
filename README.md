@@ -14,6 +14,7 @@ interactive de recherche d'itineraire.
 │       ├── examples/
 │       └── gtfs-idfm-2024/
 ├── scripts/
+│   ├── api_server.py
 │   ├── build_network.py
 │   ├── filter_gtfs.py
 │   ├── graph_algorithms/
@@ -96,7 +97,7 @@ Fichiers principaux :
 
 - `index.html` : structure de l'application ;
 - `public/styles.css` : styles de l'interface ;
-- `public/main.js` : logique de carte, interactions et calculs cote navigateur ;
+- `public/main.js` : logique de carte, interactions et appels API avec fallback navigateur ;
 - `public/data/network.json` : graphe charge par le front.
 
 Installation et lancement :
@@ -105,6 +106,15 @@ Installation et lancement :
 npm install
 npm run dev
 ```
+
+Lancer l'API Python locale pour executer les algorithmes cote backend :
+
+```bash
+npm run api
+```
+
+Si l'API n'est pas lancee, le front utilise automatiquement les algorithmes
+JavaScript integres comme fallback.
 
 Fonctionnalites disponibles :
 
@@ -186,6 +196,13 @@ Les algorithmes Python sont separes dans `scripts/graph_algorithms/` :
 
 Dijkstra reste l'algorithme de reference pour garantir le plus court temps. A*
 sert a comparer le nombre d'etats explores avec une heuristique geographique.
+
+L'API locale `scripts/api_server.py` expose ces algorithmes au front :
+
+- `POST /api/route` : trajet Dijkstra ;
+- `POST /api/compare` : comparaison Dijkstra / A* ;
+- `GET /api/connectivity` : connexite ;
+- `GET /api/mst` : arbre couvrant minimum.
 
 ## Tests
 

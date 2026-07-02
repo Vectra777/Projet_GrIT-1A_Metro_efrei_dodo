@@ -42,6 +42,7 @@ en HTML, CSS et JavaScript vanilla, servi par Vite.
 ├── scripts/
 │   ├── filter_gtfs.py
 │   ├── build_network.py
+│   ├── api_server.py
 │   ├── gtfs_pipeline/
 │   │   ├── __init__.py
 │   │   ├── common.py
@@ -89,6 +90,7 @@ Commandes principales :
 
 ```bash
 npm run dev
+npm run api
 npm run build
 npm run preview
 ```
@@ -120,6 +122,8 @@ Contient toute la logique navigateur :
 
 - chargement de `./data/network.json` ;
 - preparation des stations, lignes et arcs ;
+- appel de l'API Python locale pour Dijkstra, A*, connexite et Kruskal ;
+- fallback navigateur si l'API n'est pas lancee ;
 - projection geographique pour placer les stations ;
 - dessin canvas de la carte ;
 - chargement du fond cartographique ;
@@ -162,6 +166,41 @@ Il contient notamment :
 - `edges` : arcs horaires entre arrets consecutifs ;
 - `transfers` : correspondances ;
 - metadonnees utiles au rendu.
+
+## API Python locale
+
+### `scripts/api_server.py`
+
+Expose les algorithmes Python au front sans ajouter de framework externe.
+Le serveur charge `public/data/network.json`, puis sert des endpoints JSON.
+
+Commande :
+
+```bash
+npm run api
+```
+
+Endpoints :
+
+- `GET /api/health` : etat de l'API et source du graphe charge ;
+- `POST /api/route` : calcule un trajet avec Dijkstra horaire ;
+- `POST /api/compare` : calcule Dijkstra et A* sur la meme requete ;
+- `GET /api/connectivity` : retourne le rapport de connexite ;
+- `GET /api/mst` : retourne l'arbre couvrant minimum.
+
+Exemple de payload pour `/api/route` :
+
+```json
+{
+  "fromStation": 10,
+  "toStation": 42,
+  "travelDate": "2024-03-03",
+  "departureTime": 28800
+}
+```
+
+`departureTime` est exprime en secondes depuis le debut de la journee de
+service. Ici `28800` correspond a `08:00:00`.
 
 ## Donnees GTFS
 

@@ -33,6 +33,7 @@ const CARBON_FACTORS_KG_PER_PASSENGER_KM = {
   rer: 0.0042,
 };
 const CARBON_SOURCE = "ADEME Impact CO2, facteur Métro : 0,0042 kgCO2e / km / personne";
+const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 const state = {
   network: null,
@@ -141,7 +142,7 @@ async function init() {
     buildLegend();
     bindEvents();
     resizeCanvas();
-    computeMst();
+    await computeMst();
     setEnabled(true);
     draw();
   } catch (error) {
@@ -226,11 +227,11 @@ function buildLegend() {
 function bindEvents() {
   window.addEventListener("resize", resizeCanvas);
   els.themeToggle.addEventListener("click", toggleTheme);
-  els.searchBtn.addEventListener("click", searchRoute);
-  els.compareBtn.addEventListener("click", compareAlgorithms);
+  els.searchBtn.addEventListener("click", () => searchRoute());
+  els.compareBtn.addEventListener("click", () => compareAlgorithms());
   els.fromStation.addEventListener("change", draw);
   els.toStation.addEventListener("change", draw);
-  els.connectivityBtn.addEventListener("click", showConnectivity);
+  els.connectivityBtn.addEventListener("click", () => showConnectivity());
   els.mstToggle.addEventListener("change", () => {
     window.clearInterval(state.mstTimer);
     state.mstProgress = els.mstToggle.checked ? state.mstEdges.length : 0;
@@ -657,6 +658,31 @@ function selectedStartAbs() {
   return dateIndex * 86400 + parseInputTime();
 }
 
+function routeRequestPayload() {
+  return {
+    fromStation: Number(els.fromStation.value),
+    toStation: Number(els.toStation.value),
+    travelDate: els.travelDate.value,
+    departureTime: parseInputTime(),
+  };
+}
+
+async function callApi(path, options = {}) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!response.ok) throw new Error(`API ${response.status}`);
+  return response.json();
+}
+
+async function postApi(path, payload) {
+  return callApi(path, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 function activeOn(mask, dayIndex) {
   if (dayIndex < 0 || dayIndex >= state.network.dates.length) return false;
   return Math.floor(mask / (2 ** dayIndex)) % 2 === 1;
@@ -691,7 +717,7 @@ function nextSchedule(edge, currentAbs) {
   return best;
 }
 
-function searchRoute() {
+async function searchRoute() {
   const fromStation = Number(els.fromStation.value);
   const toStation = Number(els.toStation.value);
   if (fromStation === toStation) {
@@ -703,7 +729,13 @@ function searchRoute() {
     els.routeResult.textContent = "Choisissez une date comprise dans les données disponibles.";
     return;
   }
-  const result = dijkstra(fromStation, toStation, startAbs);
+  let result = null;
+  try {
+    const apiResult = await postApi("/route", routeRequestPayload());
+    result = apiResult.route;
+  } catch (_error) {
+    result = dijkstra(fromStation, toStation, startAbs);
+  }
   if (!result) {
     els.routeResult.textContent = "Aucun trajet trouvé à partir de cette date et de cette heure.";
     state.routeStationEdges = [];
@@ -715,7 +747,7 @@ function searchRoute() {
   draw();
 }
 
-function compareAlgorithms() {
+async function compareAlgorithms() {
   const fromStation = Number(els.fromStation.value);
   const toStation = Number(els.toStation.value);
   if (fromStation === toStation) {
@@ -728,13 +760,25 @@ function compareAlgorithms() {
     return;
   }
 
-  const dijkstraStarted = performance.now();
-  const dijkstraResult = dijkstra(fromStation, toStation, startAbs);
-  const dijkstraMs = performance.now() - dijkstraStarted;
+  let dijkstraResult = null;
+  let dijkstraMs = 0;
+  let astarResult = null;
+  let astarMs = 0;
+  try {
+    const apiResult = await postApi("/compare", routeRequestPayload());
+    dijkstraResult = apiResult.dijkstra.route;
+    dijkstraMs = apiResult.dijkstra.elapsedMs;
+    astarResult = apiResult.astar.route;
+    astarMs = apiResult.astar.elapsedMs;
+  } catch (_error) {
+    const dijkstraStarted = performance.now();
+    dijkstraResult = dijkstra(fromStation, toStation, startAbs);
+    dijkstraMs = performance.now() - dijkstraStarted;
 
-  const astarStarted = performance.now();
-  const astarResult = astar(fromStation, toStation, startAbs);
-  const astarMs = performance.now() - astarStarted;
+    const astarStarted = performance.now();
+    astarResult = astar(fromStation, toStation, startAbs);
+    astarMs = performance.now() - astarStarted;
+  }
 
   if (!dijkstraResult && !astarResult) {
     els.routeResult.textContent = "Aucun trajet trouvé à partir de cette date et de cette heure.";
@@ -1054,7 +1098,19 @@ function renderCollapsedLeg(leg) {
   `;
 }
 
-function showConnectivity() {
+async function showConnectivity() {
+  try {
+    const report = await callApi("/connectivity");
+    if (report.connected) {
+      els.connectivityResult.textContent = `Tout est relié : les ${report.stationCount} stations sont atteignables entre elles.`;
+    } else {
+      els.connectivityResult.textContent = `Réseau séparé : ${report.missing.length} stations non atteintes depuis le premier groupe.`;
+    }
+    return;
+  } catch (_error) {
+    // Fall back to browser-side BFS when the local Python API is not running.
+  }
+
   // Connexity means every station belongs to one reachable component.
   // A disconnected result reveals isolated graph groups in the data.
   const stationCount = state.network.stations.length;
@@ -1085,7 +1141,16 @@ function showConnectivity() {
   }
 }
 
-function computeMst() {
+async function computeMst() {
+  try {
+    const tree = await callApi("/mst");
+    state.mstEdges = tree.edges || [];
+    state.mstWeight = tree.totalWeight || 0;
+    return;
+  } catch (_error) {
+    // Fall back to browser-side Kruskal when the local Python API is not running.
+  }
+
   // Kruskal on the station-level graph gives the minimum spanning tree used by
   // the "arbre couvrant" overlay.
   const stationCount = state.network.stations.length;
