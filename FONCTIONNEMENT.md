@@ -1,13 +1,13 @@
 # Fonctionnement du projet
 
-Ce document explique le fonctionnement complet du projet Metro Efrei Dodo :
+Ce document explique le fonctionnement complet du projet Dijkstreet :
 les donnees utilisees, le role de chaque fichier, le pipeline Python, les
-algorithmes de graphe, le front Vite/React et des exemples de sorties.
+algorithmes de graphe, le front statique Vite et des exemples de sorties.
 
 ## Vue generale
 
 Le projet transforme des donnees GTFS Ile-de-France Mobilites en un graphe
-metro/RER exploitable pour calculer des itineraires.
+metro/RER exploitable pour calculer des itineraires et visualiser le reseau.
 
 Flux principal :
 
@@ -17,11 +17,11 @@ donnees GTFS brutes
   -> chargement trips + calendriers
   -> construction du graphe horaire
   -> algorithmes de trajet / connexite / arbre couvrant
-  -> front-end de preview
+  -> front-end interactif chargeant public/data/network.json
 ```
 
-Le front actuel est encore une preview statique. La logique metier avancee est
-dans les scripts Python.
+Le front actuel reprend le projet complet et l'adapte au nom Dijkstreet. Il est
+en HTML, CSS et JavaScript vanilla, servi par Vite.
 
 ## Arborescence utile
 
@@ -29,13 +29,15 @@ dans les scripts Python.
 .
 ├── README.md
 ├── FONCTIONNEMENT.md
-├── .gitignore
 ├── package.json
 ├── package-lock.json
 ├── vite.config.js
 ├── index.html
-├── src/
-│   ├── main.jsx
+├── public/
+│   ├── data/
+│   │   └── network.json
+│   ├── logo.png
+│   ├── main.js
 │   └── styles.css
 ├── scripts/
 │   ├── filter_gtfs.py
@@ -59,54 +61,29 @@ dans les scripts Python.
 │   ├── test_build_network.py
 │   ├── test_graph_algorithms.py
 │   └── fixtures/simple_gtfs/
-│       ├── routes.txt
-│       ├── trips.txt
-│       ├── calendar.txt
-│       ├── calendar_dates.txt
-│       ├── stops.txt
-│       ├── stop_times.txt
-│       └── transfers.txt
-├── build/
-│   └── routes_summary.json
 └── data/
-    ├── README.md
     └── raw/
         ├── Version1/
         ├── examples/
         └── gtfs-idfm-2024/
 ```
 
-`node_modules/` et `dist/` sont des dossiers generes localement par npm/Vite.
-Ils ne font pas partie du code metier.
+`node_modules/` et `dist/` sont generes localement par npm/Vite.
 
 ## Fichiers racine
 
 ### `README.md`
 
-Documentation courte du projet. Elle donne :
-
-- l'objectif ;
-- la structure principale ;
-- les commandes importantes ;
-- l'avancement ;
-- les prochaines etapes.
+Documentation courte du projet : objectif, structure, commandes principales et
+avancement.
 
 ### `FONCTIONNEMENT.md`
 
-Ce fichier. Il detaille le fonctionnement complet et donne des exemples de
-sorties.
-
-### `.gitignore`
-
-Indique a Git les fichiers ou dossiers a ignorer :
-
-- `data/` pour eviter de versionner les donnees lourdes ;
-- `dist/` pour eviter de versionner le build front ;
-- `node_modules/` pour eviter de versionner les dependances npm.
+Ce fichier. Il detaille le role de chaque partie du projet.
 
 ### `package.json`
 
-Declaration du front Vite/React.
+Declare l'application Vite statique.
 
 Commandes principales :
 
@@ -118,66 +95,75 @@ npm run preview
 
 ### `package-lock.json`
 
-Verrouille les versions exactes des dependances npm. Il permet de reinstaller
-les memes versions sur une autre machine.
+Verrouille les versions exactes des dependances npm.
 
 ### `vite.config.js`
 
-Configure Vite avec le plugin React.
+Configuration Vite minimale. Le projet n'utilise plus React ni plugin React.
 
 ### `index.html`
 
 Point d'entree HTML du front. Il charge :
 
 ```text
-/src/main.jsx
+/styles.css
+/main.js
 ```
+
+Avec Vite, ces fichiers sont servis depuis `public/`.
 
 ## Front-end
 
-### `src/main.jsx`
+### `public/main.js`
 
-Contient l'application React de preview.
+Contient toute la logique navigateur :
 
-Elle affiche :
+- chargement de `./data/network.json` ;
+- preparation des stations, lignes et arcs ;
+- projection geographique pour placer les stations ;
+- dessin canvas de la carte ;
+- chargement du fond cartographique ;
+- zoom, deplacement et recentrage ;
+- survol des stations avec tooltip ;
+- selection depart/arrivee par clic ;
+- calcul et affichage d'un trajet ;
+- comparaison Dijkstra / A* sur une meme requete ;
+- estimation carbone du trajet a partir des distances GTFS et du facteur ADEME Impact CO2 ;
+- test de connexite ;
+- calcul et animation de l'arbre couvrant minimum.
 
-- un panneau de recherche depart/arrivee/date/heure ;
-- une carte metro schematique en SVG ;
-- des boutons pour les modes Trajet, Kruskal, Connexite ;
-- une liste d'avancement du projet ;
-- un resultat simule.
+Exemple de donnees chargees :
 
-Important : pour l'instant ce front ne consomme pas encore `build/network.json`.
-Il montre l'interface cible pendant que la logique Python est construite.
+```text
+public/data/network.json
+```
 
-### `src/styles.css`
+### `public/styles.css`
 
-Contient tout le style du front :
+Contient le style de l'application :
 
-- layout sidebar + carte ;
-- boutons, champs, panneaux ;
-- carte metro SVG ;
+- panneau de controle ;
+- carte plein ecran ;
+- boutons et champs ;
+- tooltip station ;
+- legende des lignes ;
+- resultats de trajet ;
 - responsive mobile.
 
+### `public/data/network.json`
+
+Graphe metro/RER utilise par le front.
+
+Il contient notamment :
+
+- `stations` : stations commerciales avec coordonnees ;
+- `stops` : arrets/quais GTFS ;
+- `routes` : lignes metro/RER ;
+- `edges` : arcs horaires entre arrets consecutifs ;
+- `transfers` : correspondances ;
+- metadonnees utiles au rendu.
+
 ## Donnees GTFS
-
-### `data/README.md`
-
-Explique le role du dossier `data/`.
-
-### `data/raw/Version1/`
-
-Anciennes donnees fournies dans le sujet initial :
-
-- `metro.txt` ;
-- `pospoints.txt` ;
-- image de reference.
-
-Elles servent surtout de reference historique.
-
-### `data/raw/examples/`
-
-Captures d'exemples UI fournies avec le sujet.
 
 ### `data/raw/gtfs-idfm-2024/`
 
@@ -191,27 +177,21 @@ Fichiers importants :
 - `calendar_dates.txt` : exceptions de calendrier ;
 - `stops.txt` : arrets, quais et stations parentes ;
 - `stop_times.txt` : horaires de passage ;
-- `transfers.txt` : correspondances entre arrets ;
-- `agency.txt`, `pathways.txt`, `stop_extensions.txt` : donnees GTFS presentes mais peu ou pas utilisees actuellement.
+- `transfers.txt` : correspondances entre arrets.
 
 ## Script de filtrage GTFS
 
 ### `scripts/filter_gtfs.py`
 
-Ce script produit un JSON intermediaire lisible. Il sert a verifier que le
-perimetre metro/RER est bien charge avant de construire le vrai graphe.
+Produit un JSON intermediaire lisible pour verifier le perimetre metro/RER.
 
 Il fait :
 
 1. parse les heures GTFS comme `08:15:30` ou `25:10:00` ;
 2. parse les dates GTFS comme `20240227` ;
 3. lit les CSV GTFS en UTF-8 ;
-4. garde seulement :
-   - metro : `route_type = 1` ;
-   - RER : `route_type = 2` et `agency_id = IDFM:71` ;
-5. charge seulement les trips des lignes gardees ;
-6. charge seulement les calendriers des services utilises ;
-7. charge seulement les exceptions de ces services.
+4. garde seulement le metro et le RER IDFM ;
+5. charge les trips, calendriers et exceptions utiles.
 
 Commande :
 
@@ -221,7 +201,7 @@ python3 scripts/filter_gtfs.py \
   --output build/routes_summary.json
 ```
 
-Exemple de sortie avec le fixture de test :
+Exemple de sortie simplifiee :
 
 ```json
 {
@@ -229,521 +209,176 @@ Exemple de sortie avec le fixture de test :
   "routeCount": 3,
   "tripCount": 3,
   "serviceCount": 2,
-  "calendarExceptionCount": 2,
-  "routes": [
-    {
-      "id": "metro_1",
-      "shortName": "1",
-      "longName": "Metro 1",
-      "mode": "metro",
-      "color": "#FFBE00",
-      "textColor": "#000000"
-    }
-  ],
-  "trips": [
-    {
-      "id": "trip_m1_1",
-      "routeId": "metro_1",
-      "serviceId": "weekday",
-      "headsign": "La Defense",
-      "directionId": "0",
-      "shapeId": "shape_m1"
-    }
-  ]
+  "calendarExceptionCount": 2
 }
 ```
 
-## Pipeline de construction du graphe
-
-Le pipeline de graphe est separe dans `scripts/gtfs_pipeline/`.
+## Construction du graphe horaire
 
 ### `scripts/build_network.py`
 
-Point d'entree CLI. Il reste court volontairement.
-
-Il fait :
-
-1. lit les arguments `--gtfs-dir` et `--output` ;
-2. appelle `build_network()` ;
-3. ecrit le JSON final ;
-4. affiche un resume.
+Point d'entree CLI. Il lit les donnees GTFS, appelle le pipeline, puis ecrit le
+JSON de sortie.
 
 Commande :
 
 ```bash
 python3 scripts/build_network.py \
   --gtfs-dir data/raw/gtfs-idfm-2024 \
-  --output build/network.json
+  --output public/data/network.json
 ```
-
-Exemple de sortie console sur les vraies donnees :
-
-```text
-Wrote /tmp/network.json
-Routes: 21
-Stations: 540
-Stops: 1024
-Scheduled edge groups: 8869
-Transfers: 2436
-```
-
-### `scripts/gtfs_pipeline/__init__.py`
-
-Marque le dossier comme package Python.
 
 ### `scripts/gtfs_pipeline/common.py`
 
-Contient les constantes et helpers communs :
+Fonctions partagees :
 
-- `PROJECT_ROOT` ;
-- `DEFAULT_GTFS_DIR` ;
-- `DEFAULT_OUTPUT` ;
-- types GTFS metro/RER ;
-- temps de correspondance par defaut ;
-- `parse_time()` ;
-- `parse_date()` ;
-- `read_csv()`.
-
-Exemple :
-
-```python
-parse_time("08:15:30") == 29730
-parse_time("25:10:00") == 90600
-```
+- lecture CSV GTFS ;
+- parsing des heures ;
+- parsing des dates ;
+- normalisation de couleurs ;
+- constantes de filtrage metro/RER.
 
 ### `scripts/gtfs_pipeline/routes.py`
 
-Charge les lignes et les trajets.
+Charge les lignes et trajets :
 
-Fonctions principales :
-
-- `load_routes()` ;
-- `load_trips()` ;
-- `route_sort_key()`.
-
-Il transforme les routes GTFS longues en objets compacts :
-
-```json
-{
-  "id": "metro_1",
-  "shortName": "1",
-  "longName": "Metro 1",
-  "mode": "metro",
-  "color": "#FFBE00",
-  "textColor": "#000000"
-}
-```
+- garde les routes metro/RER ;
+- normalise les noms et couleurs ;
+- garde les trips lies aux routes retenues.
 
 ### `scripts/gtfs_pipeline/services.py`
 
-Charge les calendriers de circulation.
+Charge les calendriers :
 
-Il lit :
-
-- `calendar.txt` ;
-- `calendar_dates.txt`.
-
-Il produit des masques binaires de service. Chaque bit represente une date du
-tableau `dates`.
-
-Interet :
-
-- JSON plus compact ;
-- test rapide pour savoir si un service circule a une date donnee.
-
-Exemple conceptuel :
-
-```text
-dates = ["2024-02-27", "2024-02-28", "2024-02-29"]
-service actif les jours 0 et 2 -> masque binaire 101 -> entier 5
-```
+- services standards ;
+- exceptions de dates ;
+- jours actifs.
 
 ### `scripts/gtfs_pipeline/stops.py`
 
-Charge et organise les arrets.
+Construit les stations :
 
-Il fait :
-
-1. lit `stops.txt` ;
-2. garde les coordonnees latitude/longitude ;
-3. detecte les stations parentes ;
-4. regroupe les quais dans leur station commerciale ;
-5. cree des index numeriques.
-
-Exemple de station :
-
-```json
-{
-  "id": "station_c",
-  "name": "Station C",
-  "lat": 48.852,
-  "lon": 2.32,
-  "stops": [2, 3],
-  "routes": [1, 2]
-}
-```
-
-Exemple de stop :
-
-```json
-{
-  "id": "stop_c_1",
-  "name": "Station C quai 1",
-  "station": 2,
-  "lat": 48.8521,
-  "lon": 2.3201,
-  "routes": [1, 2],
-  "platform": "1",
-  "wheelchair": "1"
-}
-```
+- regroupe les quais dans leurs stations parentes ;
+- conserve les coordonnees ;
+- cree les index utiles au graphe.
 
 ### `scripts/gtfs_pipeline/network.py`
 
-Assemble le graphe final.
+Assemble le graphe final :
 
-Il fait :
+- arcs horaires entre deux arrets consecutifs ;
+- durees de trajet ;
+- references route/trip/service ;
+- correspondances depuis `transfers.txt`.
 
-1. charge routes et trips ;
-2. calcule les services actifs ;
-3. charge les stops ;
-4. lit `stop_times.txt` ;
-5. cree des arcs horaires entre arrets consecutifs ;
-6. ajoute les correspondances de `transfers.txt` ;
-7. ajoute des correspondances internes entre quais d'une meme station ;
-8. produit l'objet final `network`.
-
-Exemple d'edge horaire :
-
-```json
-[
-  0,
-  1,
-  0,
-  0,
-  [
-    [0, 28860, 29100]
-  ]
-]
-```
-
-Lecture de cet exemple :
-
-```text
-fromStop = 0
-toStop = 1
-route = 0
-headsign = 0
-schedule = service 0, depart 08:01:00, arrivee 08:05:00
-```
-
-Exemple de transfert :
-
-```json
-[1, 2, 240]
-```
-
-Lecture :
-
-```text
-stop 1 -> stop 2 en 240 secondes
-```
-
-## Structure du `network.json`
-
-Le JSON final contient :
+Exemple de sortie simplifiee :
 
 ```json
 {
-  "generatedAt": "2026-06-29T...",
-  "source": "data/raw/gtfs-idfm-2024",
-  "fallbackTransferSeconds": 180,
-  "dates": ["2024-02-27", "..."],
   "routes": [],
-  "services": [],
-  "headsigns": [],
   "stations": [],
   "stops": [],
   "edges": [],
-  "transfers": [],
-  "stationEdges": []
+  "transfers": []
 }
 ```
 
-Role des champs :
-
-- `dates` : dates disponibles dans le GTFS ;
-- `routes` : lignes metro/RER ;
-- `services` : masques de circulation par service ;
-- `headsigns` : directions ;
-- `stations` : stations commerciales ;
-- `stops` : quais/arrets precis ;
-- `edges` : arcs horaires entre stops ;
-- `transfers` : correspondances entre stops ;
-- `stationEdges` : graphe simplifie station -> station pour connexite/Kruskal.
-
-## Algorithmes de graphe
-
-Les algorithmes sont dans `scripts/graph_algorithms/`.
-
-### `scripts/graph_algorithms/__init__.py`
-
-Marque le dossier comme package Python.
+## Algorithmes graphe
 
 ### `scripts/graph_algorithms/shortest_path.py`
 
-Contient Dijkstra horaire.
-
-Il prend :
-
-- le `network` ;
-- une station de depart ;
-- une station d'arrivee ;
-- une date ;
-- une heure de depart.
-
-Il cherche l'arrivee la plus tot.
-
-Il prend en compte :
-
-- l'attente du prochain train/RER ;
-- les temps de trajet ;
-- les correspondances.
-
-Exemple de sortie lisible :
-
-```json
-{
-  "algorithm": "dijkstra",
-  "from": "Station A",
-  "to": "Station C",
-  "departure": "08:00:00",
-  "arrival": "08:09:00",
-  "duration": 540,
-  "exploredStops": 3,
-  "steps": [
-    {
-      "type": "ride",
-      "from": "Station A quai 1",
-      "to": "Station B quai 1",
-      "departure": "08:01:00",
-      "arrival": "08:05:00",
-      "line": "1",
-      "mode": "metro",
-      "headsign": "La Defense",
-      "wait": 60
-    },
-    {
-      "type": "transfer",
-      "from": "Station B quai 1",
-      "to": "Station C quai 1",
-      "departure": "08:05:00",
-      "arrival": "08:09:00",
-      "duration": 240
-    }
-  ]
-}
-```
-
-### `scripts/graph_algorithms/astar.py`
-
-Contient A* optionnel.
-
-Il utilise une heuristique geographique :
-
-```text
-distance a vol d'oiseau jusqu'a l'arrivee / vitesse maximale theorique
-```
-
-Pourquoi :
-
-- Dijkstra est la reference de correction ;
-- A* peut explorer moins de stops ;
-- on peut comparer les deux sans remplacer Dijkstra.
-
-### `scripts/graph_algorithms/compare.py`
-
-Compare Dijkstra et A* sur la meme requete.
-
-Exemple :
-
-```json
-{
-  "sameResult": true,
-  "dijkstra": {
-    "found": true,
-    "arrival": 29340,
-    "duration": 540,
-    "exploredStops": 3,
-    "elapsedMs": "..."
-  },
-  "astar": {
-    "found": true,
-    "arrival": 29340,
-    "duration": 540,
-    "exploredStops": 3,
-    "elapsedMs": "..."
-  }
-}
-```
-
-### `scripts/graph_algorithms/connectivity.py`
-
-Teste si le reseau est connecte avec un BFS.
-
-Il utilise `stationEdges`, donc le graphe station par station.
-
-Exemple :
-
-```json
-{
-  "connected": true,
-  "reachableCount": 3,
-  "stationCount": 3,
-  "missing": []
-}
-```
-
-### `scripts/graph_algorithms/kruskal.py`
-
-Construit un arbre couvrant minimum avec Kruskal.
+Implemente Dijkstra horaire.
 
 Il utilise :
 
-- `stationEdges` ;
-- les poids minimums entre stations ;
-- une structure Union-Find.
+- l'heure de depart demandee ;
+- les arcs horaires ;
+- les temps d'attente ;
+- les correspondances.
 
-Exemple :
+Objectif : trouver l'arrivee la plus tot possible.
 
-```json
-{
-  "complete": true,
-  "stationCount": 3,
-  "edgeCount": 2,
-  "totalWeight": 660,
-  "edges": [
-    [0, 1, 0, 240],
-    [1, 2, 2, 420]
-  ]
-}
+### `scripts/graph_algorithms/astar.py`
+
+Implemente A* optionnel.
+
+Il ajoute une heuristique geographique basee sur la distance a vol d'oiseau
+entre l'arret courant et la destination. L'heuristique sert uniquement a
+comparer les performances avec Dijkstra.
+
+### `scripts/graph_algorithms/compare.py`
+
+Lance Dijkstra et A* sur la meme requete et retourne :
+
+- le resultat de chaque algorithme ;
+- le nombre d'etats explores ;
+- les temps de calcul.
+
+### `scripts/graph_algorithms/connectivity.py`
+
+Teste si le graphe de stations est relie avec un parcours BFS.
+
+### `scripts/graph_algorithms/kruskal.py`
+
+Construit un arbre couvrant minimum. Il sert a visualiser une structure de
+connexion minimale du reseau.
+
+## Empreinte carbone
+
+Le front calcule une estimation par voyageur pour chaque trajet trouve.
+
+Principe :
+
+1. garder seulement les segments `ride` du resultat ;
+2. mesurer la distance approximative entre l'arret de depart et l'arret d'arrivee
+   avec les coordonnees GTFS ;
+3. additionner les distances ;
+4. appliquer un facteur d'emission en kgCO2e par kilometre et par personne.
+
+Facteur utilise :
+
+```text
+Metro : 0,0042 kgCO2e / km / personne
+RER   : 0,0042 kgCO2e / km / personne
 ```
+
+La source est ADEME Impact CO2, qui expose le facteur `Metro` a
+`0,0042 kgCO2e/km/personne`. Le RER n'est pas fourni comme mode separe dans
+l'API Impact CO2 utilisee ici ; le projet applique donc le meme facteur ferre
+urbain au RER. Cette constante est centralisee dans `public/main.js`.
 
 ## Tests
 
-### `tests/test_filter_gtfs.py`
+Les tests unitaires utilisent `tests/fixtures/simple_gtfs/`.
 
-Teste le script de filtrage :
-
-- parsing des heures ;
-- parsing des dates ;
-- rejet des heures invalides ;
-- filtrage routes metro/RER ;
-- chargement trips/calendriers/exceptions ;
-- forme du JSON intermediaire.
-
-### `tests/test_build_network.py`
-
-Teste le graphe horaire :
-
-- routes gardees ;
-- dates disponibles ;
-- edges horaires ;
-- stationEdges ;
-- transferts explicites ;
-- transferts internes a une station.
-
-### `tests/test_graph_algorithms.py`
-
-Teste les algorithmes :
-
-- Dijkstra trouve le chemin le plus tot ;
-- la description du chemin contient lignes et horaires ;
-- les transferts sont pris en compte ;
-- A* donne le meme resultat que Dijkstra sur le fixture ;
-- la comparaison Dijkstra/A* expose des metriques ;
-- la connexite est correcte ;
-- Kruskal produit un arbre couvrant minimum.
-
-### `tests/fixtures/simple_gtfs/*.txt`
-
-Petit GTFS minimal utilise par les tests.
-
-Role des fichiers :
-
-- `routes.txt` : 3 lignes utiles et 2 lignes ignorees ;
-- `trips.txt` : trips associes aux lignes ;
-- `calendar.txt` : services weekday/weekend ;
-- `calendar_dates.txt` : exceptions ;
-- `stops.txt` : 3 stations, 4 stops ;
-- `stop_times.txt` : horaires de passage ;
-- `transfers.txt` : correspondances.
-
-## Commandes utiles
-
-Installer le front :
-
-```bash
-npm install
-```
-
-Lancer la preview :
-
-```bash
-npm run dev
-```
-
-Compiler le front :
-
-```bash
-npm run build
-```
-
-Tester Python :
+Commande :
 
 ```bash
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
-Generer le resume filtre :
+Ils verifient :
 
-```bash
-python3 scripts/filter_gtfs.py \
-  --gtfs-dir data/raw/gtfs-idfm-2024 \
-  --output build/routes_summary.json
-```
-
-Generer le graphe :
-
-```bash
-python3 scripts/build_network.py \
-  --gtfs-dir data/raw/gtfs-idfm-2024 \
-  --output build/network.json
-```
-
-## Etat fonctionnel actuel
-
-Fait :
-
-- lecture et filtrage GTFS ;
-- trips et calendriers ;
-- graphe horaire ;
+- parsing des heures et dates ;
+- filtrage metro/RER ;
+- construction du graphe ;
 - Dijkstra horaire ;
-- A* optionnel ;
-- comparaison Dijkstra/A* ;
-- connexite BFS ;
-- Kruskal ;
-- preview front.
+- A* ;
+- comparaison ;
+- connexite ;
+- Kruskal.
 
-Pas encore branche :
+## Build front
 
-- le front ne lit pas encore `build/network.json` ;
-- le front n'appelle pas encore les algorithmes Python ;
-- les resultats affiches dans le front sont encore simules.
+Commande :
 
-Prochaine etape logique :
-
-```text
-creer une petite API Python ou porter les algorithmes en JavaScript,
-puis brancher le front sur les vraies donnees.
+```bash
+npm run build
 ```
+
+Vite produit `dist/` avec :
+
+- `index.html` ;
+- `main.js` ;
+- `styles.css` ;
+- `data/network.json`.
